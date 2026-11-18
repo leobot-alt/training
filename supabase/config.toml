@@ -1,0 +1,16 @@
+project_id = "training"
+
+[api]
+enabled = true
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[functions.candidate-register]
+verify_jwt = false
+
+[functions.team-users]
+verify_jwt = true
+
+[functions.import-legacy]
+verify_jwt = true

@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 150 24% 98%;
+    --foreground: 174 40% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 174 40% 11%;
+    --primary: 174 61% 20%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 168 60% 35%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 162 55% 92%;
+    --accent-foreground: 174 61% 18%;
+    --muted: 160 18% 95%;
+    --muted-foreground: 172 10% 40%;
+    --destructive: 0 68% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --warning: 32 88% 44%;
+    --warning-foreground: 0 0% 100%;
+    --success: 158 64% 33%;
+    --success-foreground: 0 0% 100%;
+    --border: 168 16% 89%;
+    --input: 168 16% 87%;
+    --ring: 168 60% 35%;
+    --sidebar: 176 46% 12%;
+    --radius: 0.9rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight;
+  }
+
+  ::selection {
+    @apply bg-secondary/25;
+  }
+}
+
+@layer components {
+  .card-surface {
+    @apply rounded-lg border bg-card shadow-soft;
+  }
+
+  .field-label {
+    @apply text-sm font-medium text-foreground;
+  }
+
+  .field-hint {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .focus-ring {
+    @apply outline-none ring-offset-2 ring-offset-background focus-visible:ring-2 focus-visible:ring-ring;
+  }
+
+  .grid-lines {
+    background-image: linear-gradient(to right, hsl(var(--border) / 0.6) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.6) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+}
+
+/* Scrollbar discreto nas listas do CRM */
+.thin-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}

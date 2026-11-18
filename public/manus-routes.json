@@ -1,0 +1,22 @@
+{
+  "routes": [
+    { "path": "/", "title": "Portal de Recrutamento" },
+    { "path": "/cadastro", "title": "Cadastro de Profissionais" },
+    { "path": "/pre-cadastro", "title": "Pré-cadastro de Profissionais" },
+    { "path": "/login", "title": "Entrar" },
+    { "path": "/painel", "title": "Painel do Profissional" },
+    { "path": "/painel/treinamentos", "title": "Treinamentos" },
+    { "path": "/painel/treinamentos/:trilhaId", "title": "Trilha de Treinamento" },
+    { "path": "/painel/treinamentos/:trilhaId/:aulaId", "title": "Aula" },
+    { "path": "/admin", "title": "CRM — Visão geral" },
+    { "path": "/admin/candidatos", "title": "CRM — Candidatos" },
+    { "path": "/admin/solicitacoes", "title": "CRM — Solicitações" },
+    { "path": "/admin/pipeline", "title": "CRM — Pipeline" },
+    { "path": "/admin/treinamentos", "title": "CRM — Treinamentos" },
+    { "path": "/admin/ajustes", "title": "CRM — Ajustes" },
+    { "path": "/admin/conteudo-home", "title": "CRM — Conteúdo da home" },
+    { "path": "/admin/fluxo-treinamento", "title": "CRM — Fluxo de treinamento" },
+    { "path": "/admin/usuarios", "title": "CRM — Usuários da equipe" },
+    { "path": "/admin/minha-conta", "title": "CRM — Minha conta" }
+  ]
+}
