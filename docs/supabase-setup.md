@@ -12,7 +12,7 @@ Este guia prepara o backend persistente da aplicação publicada no GitHub Pages
    supabase link --project-ref <PROJECT_REF>
    ```
 
-3. Revise `supabase/migrations/20261118000000_initial_crm.sql` e aplique-a ao projeto correto:
+3. Revise as migrations em `supabase/migrations/` e aplique-as ao projeto correto:
 
    ```bash
    supabase db push
@@ -58,11 +58,11 @@ A função `candidate-register` valida CPF, nascimento, campos de identidade/con
 
 ## 4. Arquivos e buckets privados
 
-A migration configura os buckets `professional-documents` e `training-media` como privados. Não marque nenhum deles como público.
+Os buckets `professional-documents` e `training-media` são privados; não marque nenhum deles como público. A migration `20261118214824_secure_storage_uploads_and_training_access.sql` impõe também limites no serviço: documentos de até 10 MiB somente em PDF/JPG/PNG e vídeos de até 50 MiB somente em MP4/WEBM/QuickTime. Esses valores correspondem aos controles do formulário.
 
 - Documentos profissionais ficam em `<candidate_id>/<arquivo>`. O próprio profissional pode enviar/ler somente dentro da pasta vinculada ao seu perfil. A equipe precisa da permissão `candidatos` para revisar/baixar; a permissão `solicitacoes` não concede acesso a arquivos.
 - Depois do envio do documento, o cliente chama `update_candidate_documents(p_candidate_id, p_documents)`. O servidor confere o vínculo do perfil e caminhos existentes no bucket; a equipe com permissão cadastral pode revisar o status.
-- Vídeos ficam no bucket `training-media`. A equipe com `treinamentos` pode enviar/administrar; profissionais autenticados leem somente mídia marcada como publicada. O player usa URLs assinadas temporárias.
+- Vídeos ficam no bucket `training-media`. A equipe com `treinamentos` pode enviar/administrar; profissionais com perfil ativo leem somente mídia marcada como publicada. O player usa URLs assinadas temporárias.
 
 ## 5. GitHub Pages e variáveis públicas
 
