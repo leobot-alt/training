@@ -4,29 +4,32 @@
 
 @layer base {
   :root {
-    --background: 150 24% 98%;
-    --foreground: 174 40% 11%;
+    --background: 223 100% 99%;
+    --foreground: 225 80% 18%;
     --card: 0 0% 100%;
-    --card-foreground: 174 40% 11%;
-    --primary: 174 61% 20%;
+    --card-foreground: 225 80% 18%;
+    --primary: 240 83% 55%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 168 60% 35%;
+    --secondary: 192 100% 31%;
     --secondary-foreground: 0 0% 100%;
-    --accent: 162 55% 92%;
-    --accent-foreground: 174 61% 18%;
-    --muted: 160 18% 95%;
-    --muted-foreground: 172 10% 40%;
+    --accent: 220 100% 96%;
+    --accent-foreground: 225 80% 18%;
+    --muted: 220 35% 96%;
+    --muted-foreground: 224 16% 42%;
     --destructive: 0 68% 48%;
     --destructive-foreground: 0 0% 100%;
     --warning: 32 88% 44%;
     --warning-foreground: 0 0% 100%;
     --success: 158 64% 33%;
     --success-foreground: 0 0% 100%;
-    --border: 168 16% 89%;
-    --input: 168 16% 87%;
-    --ring: 168 60% 35%;
-    --sidebar: 176 46% 12%;
-    --radius: 0.9rem;
+    --border: 221 46% 91%;
+    --input: 221 45% 89%;
+    --ring: 240 83% 55%;
+    --sidebar: 225 80% 18%;
+    --brand-blue: 240 83% 55%;
+    --brand-violet: 280 78% 69%;
+    --brand-cyan: 191 86% 49%;
+    --radius: 1rem;
   }
 
   * {
@@ -64,6 +67,18 @@
 
   .field-hint {
     @apply text-xs text-muted-foreground;
+  }
+
+  .brand-gradient {
+    background-image: linear-gradient(115deg, hsl(var(--brand-violet)) 0%, hsl(var(--brand-blue)) 54%, hsl(var(--brand-cyan)) 100%);
+  }
+
+  .brand-wordmark {
+    background-image: linear-gradient(100deg, hsl(var(--brand-blue)) 12%, hsl(var(--brand-violet)) 56%, hsl(var(--brand-cyan)) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
   }
 
   .focus-ring {

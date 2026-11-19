@@ -49,6 +49,11 @@ export default {
           foreground: 'hsl(var(--success-foreground))',
         },
         sidebar: 'hsl(var(--sidebar))',
+        brand: {
+          blue: 'hsl(var(--brand-blue))',
+          violet: 'hsl(var(--brand-violet))',
+          cyan: 'hsl(var(--brand-cyan))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -57,11 +62,11 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+        display: ['"Familjen Grotesk"', 'Inter', 'sans-serif'],
       },
       boxShadow: {
-        soft: '0 1px 2px rgba(16, 44, 40, 0.04), 0 12px 32px -12px rgba(16, 44, 40, 0.16)',
-        lift: '0 24px 60px -24px rgba(16, 44, 40, 0.35)',
+        soft: '0 1px 2px rgba(9, 28, 83, 0.04), 0 12px 32px -12px rgba(9, 28, 83, 0.14)',
+        lift: '0 24px 60px -24px rgba(9, 28, 83, 0.28)',
       },
       keyframes: {
         'fade-in': {

@@ -93,7 +93,7 @@ function HeroPanel() {
             <p className="text-[11px] uppercase tracking-wide text-white/60">Repasse previsto · sexta</p>
             <p className="mt-1 font-display text-2xl font-bold">R$ 2.480</p>
             <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/20">
-              <div className="h-full w-[68%] rounded-full bg-[#6FE3CB]" />
+              <div className="h-full w-[68%] rounded-full bg-brand-cyan" />
             </div>
             <p className="mt-2 text-[11px] text-white/60">16 de 24 sessões concluídas nesta semana</p>
           </div>
@@ -135,7 +135,7 @@ export default function Index() {
             <h1 className="text-balance font-display text-4xl font-extrabold leading-[1.05] text-foreground sm:text-5xl lg:text-[3.4rem]">
               Atenda de onde estiver.
               <br />
-              <span className="text-secondary">A gente leva os pacientes</span> até você.
+              <span className="brand-wordmark">A gente leva os pacientes</span> até você.
             </h1>
 
             <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
@@ -333,9 +333,9 @@ export default function Index() {
 
       {/* CTA FINAL */}
       <section className="container pb-4">
-        <div className="relative overflow-hidden rounded-[1.5rem] bg-primary px-6 py-14 text-center text-white sm:px-12">
+        <div className="relative overflow-hidden rounded-[1.5rem] brand-gradient px-6 py-14 text-center text-white sm:px-12">
           <div className="absolute -left-16 -top-16 h-56 w-56 rounded-full bg-secondary/25 blur-3xl" />
-          <div className="absolute -bottom-20 -right-10 h-56 w-56 rounded-full bg-[#6FE3CB]/20 blur-3xl" />
+          <div className="absolute -bottom-20 -right-10 h-56 w-56 rounded-full bg-brand-cyan/20 blur-3xl" />
           <div className="relative mx-auto max-w-2xl space-y-6">
             <h2 className="text-3xl font-bold sm:text-4xl">Sua próxima agenda cheia começa com um formulário</h2>
             <p className="text-white/70">
@@ -343,7 +343,7 @@ export default function Index() {
             </p>
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link to="/pre-cadastro">
-                <Button size="lg" className="bg-[#6FE3CB] text-primary hover:bg-[#5FD3BE]">
+                <Button size="lg" className="bg-white text-primary hover:bg-white/90">
                   Fazer cadastro agora
                   <ArrowRight className="h-4 w-4" />
                 </Button>

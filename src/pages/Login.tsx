@@ -39,11 +39,11 @@ export default function Login() {
   return (
     <div className="container grid min-h-[calc(100vh-4rem)] items-center gap-12 py-12 lg:grid-cols-2">
       <div className="hidden lg:block">
-        <div className="relative overflow-hidden rounded-[1.5rem] bg-primary p-10 text-white">
+        <div className="relative overflow-hidden rounded-[1.5rem] bg-sidebar p-10 text-white">
           <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-secondary/30 blur-3xl" />
-          <div className="absolute -bottom-16 -left-10 h-56 w-56 rounded-full bg-[#6FE3CB]/15 blur-3xl" />
+          <div className="absolute -bottom-16 -left-10 h-56 w-56 rounded-full bg-brand-cyan/15 blur-3xl" />
           <div className="relative space-y-6">
-            <Sparkles className="h-8 w-8 text-[#6FE3CB]" />
+            <Sparkles className="h-8 w-8 text-brand-cyan" />
             <h2 className="text-3xl font-bold leading-tight">Um painel só seu, com sua agenda, seus documentos e seu repasse.</h2>
             <p className="text-sm leading-relaxed text-white/70">
               Acompanhe cada etapa do seu pré-cadastro, envie documentos e mantenha sua agenda conforme as liberações da equipe.
@@ -55,7 +55,7 @@ export default function Login() {
                 'Treinamentos e solicitações em um só lugar',
               ].map((item) => (
                 <div key={item} className="flex items-start gap-2.5 text-sm text-white/80">
-                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#6FE3CB]" />
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-cyan" />
                   {item}
                 </div>
               ))}

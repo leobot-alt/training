@@ -12,12 +12,12 @@ export function LogoMark({ className }: { className?: string }) {
       <rect width="40" height="40" rx="12" fill="currentColor" />
       <path
         d="M11 25.5c4.2 0 5.6-2.8 9-2.8s4.8 2.8 9 2.8"
-        stroke="#6FE3CB"
+        stroke="#12C2E9"
         strokeWidth="3.2"
         strokeLinecap="round"
         fill="none"
       />
-      <circle cx="20" cy="14.5" r="3.4" fill="#6FE3CB" />
+      <circle cx="20" cy="14.5" r="3.4" fill="#12C2E9" />
     </svg>
   );
 }
@@ -30,11 +30,11 @@ export function Logo({ compact = false, dark = false }: { compact?: boolean; dar
         <span
           className={cn(
             'font-display text-xl font-extrabold lowercase tracking-tight',
-            dark ? 'text-white' : 'text-primary',
+            dark ? 'text-white' : 'brand-wordmark',
           )}
         >
           somente
-          <span className="text-secondary">.</span>
+          <span className="text-brand-cyan">.</span>
         </span>
       )}
     </Link>
