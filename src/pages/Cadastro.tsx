@@ -22,6 +22,7 @@ import { deleteDocumentFile } from '@/lib/document-storage';
 import { uploadCandidateDocument } from '@/lib/supabase';
 import { ABORDAGENS, DOCUMENTOS_PADRAO, ESPECIALIDADES, type AgendaSlot, type Candidato, type Documento } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { normalizeRegistrationFields } from '@/lib/registration-fields';
 
 const UFS = [
   'AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT',
@@ -78,7 +79,7 @@ const initialState: FormState = {
   numero: '',
   chavePix: '',
   cidade: '',
-  uf: 'SP',
+  uf: '',
   profissao: 'Psicólogo',
   registro: '',
   experienciaAnos: '',
@@ -106,10 +107,10 @@ function formFromCandidate(candidate: Candidato): FormState {
     numero: saved.numero ?? '',
     chavePix: saved.chavePix ?? '',
     cidade: saved.cidade ?? '',
-    uf: saved.uf ?? 'SP',
+    uf: saved.uf ?? '',
     profissao: saved.profissao,
     registro: saved.registro ?? '',
-    experienciaAnos: String(saved.experienciaAnos ?? 0),
+    experienciaAnos: String(saved.experienciaAnos ?? ''),
     abordagem: (saved.abordagem ?? '').split(' · ').filter(Boolean),
     especialidades: saved.especialidades ?? [],
     bio: saved.bio ?? '',
@@ -144,7 +145,11 @@ export default function Cadastro() {
   const navigate = useNavigate();
   const location = useLocation();
   const isPreCadastro = location.pathname === '/pre-cadastro';
-  const { addCandidato, candidatos, user, solicitarAtualizacaoCandidato, updateCandidateDocuments } = useStore();
+  const { addCandidato, candidatos, user, homeContent, solicitarAtualizacaoCandidato, updateCandidateDocuments } = useStore();
+  const requiredFields = useMemo(
+    () => normalizeRegistrationFields(homeContent.registrationFields),
+    [homeContent.registrationFields],
+  );
   const candidatoAtual = !isPreCadastro && user?.role === 'profissional'
     ? candidatos.find((item) => item.id === user.candidatoId)
     : undefined;
@@ -240,26 +245,35 @@ export default function Cadastro() {
     if (current === 0) {
       if (form.nome.trim().length < 5) next.nome = 'Informe seu nome completo.';
       if ((!isUpdate || form.cpf !== candidatoAtual?.cpf) && !validCpf(form.cpf)) next.cpf = 'Informe um CPF válido.';
-      if (form.rg.trim().length < 5) next.rg = 'Informe seu RG.';
-      if (!form.sexo) next.sexo = 'Selecione uma opção.';
+      if ((requiredFields.rg || form.rg.trim()) && form.rg.trim().length < 5) next.rg = 'Informe um RG válido.';
+      const sexOptions = ['Feminino', 'Masculino', 'Não binário', 'Prefiro não informar'];
+      if ((requiredFields.sexo && !form.sexo) || (form.sexo && !sexOptions.includes(form.sexo))) next.sexo = 'Selecione uma opção válida.';
       if (!form.dataNascimento || new Date(form.dataNascimento) >= new Date()) next.dataNascimento = 'Informe uma data de nascimento válida.';
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = 'Informe um e-mail válido.';
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.emailTeams)) next.emailTeams = 'Informe um e-mail válido para o Teams.';
-      if (form.telefone.replace(/\D/g, '').length < 10) next.telefone = 'Informe um telefone com DDD.';
-      if (form.cep.replace(/\D/g, '').length !== 8) next.cep = 'Informe um CEP válido.';
-      if (!form.endereco.trim()) next.endereco = 'Informe o endereço.';
-      if (!form.numero.trim()) next.numero = 'Informe o número.';
-      if (!form.cidade.trim() || !form.uf) next.cep = 'Consulte o CEP ou informe cidade e UF.';
-      if (form.chavePix.trim().length < 3) next.chavePix = 'Informe sua chave Pix.';
+      if ((requiredFields.email || form.email.trim()) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = 'Informe um e-mail válido.';
+      if ((requiredFields.emailTeams || form.emailTeams.trim()) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.emailTeams)) next.emailTeams = 'Informe um e-mail válido para o Teams.';
+      const phoneDigits = form.telefone.replace(/\D/g, '').length;
+      if ((requiredFields.telefone || form.telefone.trim()) && (phoneDigits < 10 || phoneDigits > 15)) next.telefone = 'Informe um telefone válido com DDD.';
+      const cepDigits = form.cep.replace(/\D/g, '').length;
+      if ((requiredFields.cep || form.cep.trim()) && cepDigits !== 8) next.cep = 'Informe um CEP válido.';
+      if (requiredFields.endereco && !form.endereco.trim()) next.endereco = 'Informe o endereço.';
+      if (requiredFields.numero && !form.numero.trim()) next.numero = 'Informe o número.';
+      if (requiredFields.cidade && !form.cidade.trim()) next.cidade = 'Informe a cidade.';
+      if ((requiredFields.uf && !form.uf) || (form.uf && !UFS.includes(form.uf))) next.uf = 'Selecione uma UF válida.';
+      if ((requiredFields.chavePix || form.chavePix.trim()) && form.chavePix.trim().length < 3) next.chavePix = 'Informe uma chave Pix válida.';
     }
     if (current === 1) {
-      if (form.registro.trim().length < 5) next.registro = 'Informe o número do registro (CRP ou CRM).';
-      if (!form.experienciaAnos || Number(form.experienciaAnos) < 0) next.experienciaAnos = 'Informe os anos de experiência.';
-      if (form.abordagem.length === 0) next.abordagem = 'Selecione ao menos uma abordagem.';
-      if (form.especialidades.length === 0) next.especialidades = 'Selecione ao menos uma especialidade.';
+      const registrationLength = form.registro.trim().length;
+      if ((requiredFields.registro || registrationLength > 0) && (registrationLength < 5 || registrationLength > 80)) next.registro = 'Informe um registro válido (CRP ou CRM).';
+      const hasExperience = form.experienciaAnos.trim() !== '';
+      const experience = Number(form.experienciaAnos);
+      if ((requiredFields.experienciaAnos && !hasExperience) || (hasExperience && (!Number.isFinite(experience) || experience < 0 || experience > 80))) next.experienciaAnos = 'Informe um número válido de anos de experiência.';
+      if (requiredFields.abordagem && form.abordagem.length === 0) next.abordagem = 'Selecione ao menos uma abordagem.';
+      if (requiredFields.especialidades && form.especialidades.length === 0) next.especialidades = 'Selecione ao menos uma especialidade.';
+      if (requiredFields.bio && !form.bio.trim()) next.bio = 'Informe seu resumo profissional.';
+      if (form.bio.length > 2000) next.bio = 'O resumo deve ter no máximo 2.000 caracteres.';
     }
     if (current === 3) {
-      if (form.agenda.length === 0) next.agenda = 'Adicione pelo menos um horário disponível.';
+      if (requiredFields.agenda && form.agenda.length === 0) next.agenda = 'Adicione pelo menos um horário disponível.';
     }
     if (current === 4 && isUpdate && !confirmacaoAtualizacao) {
       next.confirmacaoAtualizacao = 'Confirme o envio para validação da equipe.';
@@ -305,7 +319,7 @@ export default function Cadastro() {
       registro: form.registro,
       especialidades: form.especialidades,
       abordagem: form.abordagem.join(' · ') || 'Não informada',
-      experienciaAnos: Number(form.experienciaAnos),
+      experienciaAnos: form.experienciaAnos.trim() ? Number(form.experienciaAnos) : null,
       agenda: form.agenda,
       observacoesAgenda: form.observacoesAgenda,
       bio: form.bio.trim() || undefined,
@@ -484,10 +498,10 @@ export default function Cadastro() {
                 <Field label="CPF" required error={errors.cpf}>
                   <Input value={form.cpf} onChange={(e) => set('cpf', maskCpf(e.target.value))} placeholder="000.000.000-00" inputMode="numeric" />
                 </Field>
-                <Field label="RG" required error={errors.rg}>
+                <Field label="RG" required={requiredFields.rg} optional={!requiredFields.rg} error={errors.rg}>
                   <Input value={form.rg} onChange={(e) => set('rg', e.target.value)} placeholder="Número do RG" />
                 </Field>
-                <Field label="Sexo" required error={errors.sexo}>
+                <Field label="Sexo" required={requiredFields.sexo} optional={!requiredFields.sexo} error={errors.sexo}>
                   <Select value={form.sexo} onChange={(e) => set('sexo', e.target.value)}>
                     <option value="">Selecione</option>
                     <option value="Feminino">Feminino</option>
@@ -499,35 +513,36 @@ export default function Cadastro() {
                 <Field label="Data de nascimento" required error={errors.dataNascimento}>
                   <Input type="date" value={form.dataNascimento} onChange={(e) => set('dataNascimento', e.target.value)} />
                 </Field>
-                <Field label="E-mail" required error={errors.email}>
+                <Field label="E-mail" required={requiredFields.email} optional={!requiredFields.email} error={errors.email}>
                   <Input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} placeholder="voce@email.com" />
                 </Field>
-                <Field label="E-mail Microsoft Teams" required error={errors.emailTeams}>
+                <Field label="E-mail Microsoft Teams" required={requiredFields.emailTeams} optional={!requiredFields.emailTeams} error={errors.emailTeams}>
                   <Input type="email" value={form.emailTeams} onChange={(e) => set('emailTeams', e.target.value)} placeholder="voce@empresa.com" />
                 </Field>
-                <Field label="Telefone" required error={errors.telefone}>
+                <Field label="Telefone" required={requiredFields.telefone} optional={!requiredFields.telefone} error={errors.telefone}>
                   <Input value={form.telefone} onChange={(e) => set('telefone', e.target.value)} placeholder="(00) 00000-0000" inputMode="tel" />
                 </Field>
-                <Field label="CEP" required error={errors.cep} hint={buscandoCep ? 'Consultando CEP…' : 'O endereço será preenchido após informar o CEP.'}>
+                <Field label="CEP" required={requiredFields.cep} optional={!requiredFields.cep} error={errors.cep} hint={buscandoCep ? 'Consultando CEP…' : 'O endereço será preenchido após informar o CEP.'}>
                   <Input value={form.cep} onChange={(e) => set('cep', maskCep(e.target.value))} onBlur={buscarCep} placeholder="00000-000" inputMode="numeric" />
                 </Field>
-                <Field label="Endereço" required error={errors.endereco} className="sm:col-span-2">
+                <Field label="Endereço" required={requiredFields.endereco} optional={!requiredFields.endereco} error={errors.endereco} className="sm:col-span-2">
                   <Input value={form.endereco} onChange={(e) => set('endereco', e.target.value)} placeholder="Preenchido automaticamente pelo CEP" />
                 </Field>
-                <Field label="Número" required error={errors.numero}>
+                <Field label="Número" required={requiredFields.numero} optional={!requiredFields.numero} error={errors.numero}>
                   <Input value={form.numero} onChange={(e) => set('numero', e.target.value)} placeholder="Número e complemento" />
                 </Field>
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Cidade" required>
+                  <Field label="Cidade" required={requiredFields.cidade} optional={!requiredFields.cidade} error={errors.cidade}>
                     <Input value={form.cidade} onChange={(e) => set('cidade', e.target.value)} placeholder="Cidade" />
                   </Field>
-                  <Field label="UF" required>
+                  <Field label="UF" required={requiredFields.uf} optional={!requiredFields.uf} error={errors.uf}>
                     <Select value={form.uf} onChange={(e) => set('uf', e.target.value)}>
+                      <option value="">Selecione</option>
                       {UFS.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
                     </Select>
                   </Field>
                 </div>
-                <Field label="Chave Pix" required error={errors.chavePix} className="sm:col-span-2">
+                <Field label="Chave Pix" required={requiredFields.chavePix} optional={!requiredFields.chavePix} error={errors.chavePix} className="sm:col-span-2">
                   <Input value={form.chavePix} onChange={(e) => set('chavePix', e.target.value)} placeholder="CPF, e-mail, telefone ou chave aleatória" />
                 </Field>
               </div>
@@ -544,24 +559,24 @@ export default function Cadastro() {
                     <option value="Psiquiatra">Psiquiatra</option>
                   </Select>
                 </Field>
-                <Field label="Registro profissional" required error={errors.registro} hint="CRP para psicólogos, CRM para psiquiatras">
+                <Field label="Registro profissional" required={requiredFields.registro} optional={!requiredFields.registro} error={errors.registro} hint="CRP para psicólogos, CRM para psiquiatras">
                   <Input
                     value={form.registro}
                     onChange={(e) => set('registro', e.target.value)}
                     placeholder="CRP 06/123456"
                   />
                 </Field>
-                <Field label="Anos de experiência clínica" required error={errors.experienciaAnos}>
+                <Field label="Anos de experiência clínica" required={requiredFields.experienciaAnos} optional={!requiredFields.experienciaAnos} error={errors.experienciaAnos}>
                   <Input
                     type="number"
                     min={0}
-                    max={60}
+                    max={80}
                     value={form.experienciaAnos}
                     onChange={(e) => set('experienciaAnos', e.target.value)}
                     placeholder="5"
                   />
                 </Field>
-                <Field label="Abordagens clínicas" required error={errors.abordagem} hint="Marque uma ou mais opções" className="sm:col-span-2">
+                <Field label="Abordagens clínicas" required={requiredFields.abordagem} optional={!requiredFields.abordagem} error={errors.abordagem} hint="Marque uma ou mais opções" className="sm:col-span-2">
                   <div className="grid gap-2 pt-1 sm:grid-cols-2">
                     {approachOptions.map((item) => (
                       <label key={item} className="flex cursor-pointer items-center gap-3 rounded-md border border-border/70 bg-card px-3 py-2.5 text-sm hover:border-secondary/50">
@@ -579,7 +594,8 @@ export default function Cadastro() {
 
                 <Field
                   label="Especialidades"
-                  required
+                  required={requiredFields.especialidades}
+                  optional={!requiredFields.especialidades}
                   error={errors.especialidades}
                   hint="Selecione tudo com que você trabalha"
                   className="sm:col-span-2"
@@ -608,6 +624,9 @@ export default function Cadastro() {
 
                 <Field
                   label="Resumo profissional"
+                  required={requiredFields.bio}
+                  optional={!requiredFields.bio}
+                  error={errors.bio}
                   hint="Aparece para o time de recrutamento"
                   className="sm:col-span-2"
                 >
@@ -676,6 +695,7 @@ export default function Cadastro() {
 
             {step === 3 && (
               <div className="space-y-3 animate-fade-in">
+                <p className="text-xs font-medium text-muted-foreground">Preenchimento da agenda: {requiredFields.agenda ? 'obrigatório' : 'opcional'}.</p>
                 {errors.agenda && <p className="text-xs font-medium text-destructive">{errors.agenda}</p>}
                 <AgendaGrade
                   agenda={form.agenda}
@@ -693,22 +713,22 @@ export default function Cadastro() {
                   {[
                     ['Nome', form.nome],
                     ['CPF', form.cpf],
-                    ['RG', form.rg],
-                    ['Sexo', form.sexo],
+                    ['RG', form.rg.trim() || 'Não informado'],
+                    ['Sexo', form.sexo || 'Não informado'],
                     ['Data de nascimento', form.dataNascimento],
-                    ['E-mail', form.email],
-                    ['E-mail Microsoft Teams', form.emailTeams],
-                    ['Telefone', form.telefone],
-                    ['CEP', form.cep],
-                    ['Endereço', `${form.endereco}, ${form.numero}`],
-                    ['Cidade', `${form.cidade} — ${form.uf}`],
-                    ['Chave Pix', form.chavePix],
+                    ['E-mail', form.email.trim() || 'Não informado'],
+                    ['E-mail Microsoft Teams', form.emailTeams.trim() || 'Não informado'],
+                    ['Telefone', form.telefone.trim() || 'Não informado'],
+                    ['CEP', form.cep.trim() || 'Não informado'],
+                    ['Endereço', [form.endereco.trim(), form.numero.trim()].filter(Boolean).join(', ') || 'Não informado'],
+                    ['Cidade', [form.cidade.trim(), form.uf].filter(Boolean).join(' — ') || 'Não informado'],
+                    ['Chave Pix', form.chavePix.trim() || 'Não informado'],
                     ['Profissão', form.profissao],
-                    ['Registro', form.registro],
-                    ['Experiência', `${form.experienciaAnos} anos`],
+                    ['Registro', form.registro.trim() || 'Não informado'],
+                    ['Experiência', form.experienciaAnos.trim() ? `${form.experienciaAnos} anos` : 'Não informado'],
                     ['Abordagem', form.abordagem.join(' · ') || 'Não informada'],
-                    ['Agenda disponível', form.agenda.length ? form.agenda.map((slot) => `${slot.dia} ${slot.inicio}–${slot.fim}`).join(' · ') : '—'],
-                    ['Especialidades', form.especialidades.join(', ') || '—'],
+                    ['Agenda disponível', form.agenda.length ? form.agenda.map((slot) => `${slot.dia} ${slot.inicio}–${slot.fim}`).join(' · ') : 'Não informada'],
+                    ['Especialidades', form.especialidades.join(', ') || 'Não informadas'],
                   ].map(([label, value]) => (
                     <div key={label} className="rounded-md border border-border/70 bg-background p-3">
                       <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>

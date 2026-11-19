@@ -76,7 +76,7 @@ export interface Candidato {
   registro: string;
   especialidades: string[];
   abordagem: string;
-  experienciaAnos: number;
+  experienciaAnos: number | null;
   modalidade?: 'Online' | 'Presencial' | 'Híbrido';
   turnos?: string[];
   valorSessao?: number;

@@ -44,6 +44,7 @@ function stringify(value: unknown, field: keyof DadosPerfilCandidato) {
     return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('pt-BR');
   }
   if (field === 'experienciaAnos' && typeof value === 'number') return `${value} anos`;
+  if (field === 'experienciaAnos' && (value === null || value === undefined || value === '')) return 'Não informado';
   return value === undefined || value === null || value === '' ? '—' : String(value);
 }
 

@@ -157,7 +157,7 @@ export function AdminCandidateEdit({ candidato, onSave }: {
             <Input value={form.registro} onChange={(event) => set('registro', event.target.value)} />
           </Field>
           <Field label="Anos de experiência">
-            <Input type="number" min={0} max={60} value={form.experienciaAnos} onChange={(event) => set('experienciaAnos', Number(event.target.value))} />
+            <Input type="number" min={0} max={80} value={form.experienciaAnos ?? ''} onChange={(event) => set('experienciaAnos', event.target.value === '' ? null : Number(event.target.value))} />
           </Field>
           <Field label="Abordagem principal" required error={errors.abordagem}>
             <Select value={form.abordagem} onChange={(event) => set('abordagem', event.target.value)}>

@@ -4,6 +4,7 @@
 
 - [x] O site apresenta “Como funciona”, “Benefícios”, “Requisitos” e “Dúvidas”, todas editáveis no admin; o fluxo de inscrição continua sendo pré-cadastro.
 - [x] O formulário em etapas solicita nome completo, CPF validado/formatado, RG, sexo, data de nascimento, e-mail, e-mail Microsoft Teams, telefone, CEP, endereço preenchido pelo CEP e número complementar, chave Pix, profissão, registro profissional, experiência, abordagens em caixas de seleção, especialidades, agenda e consentimento.
+- [x] O administrador configura em Ajustes, campo a campo, se RG, sexo, e-mail, e-mail Teams, telefone, CEP, endereço, número, cidade, UF, chave Pix, registro, experiência, abordagens, especialidades, resumo e agenda são obrigatórios. A escolha persiste no Supabase e é aplicada pelo formulário e pelo endpoint de cadastro. Nome, CPF, data de nascimento, profissão e consentimento LGPD permanecem obrigatórios.
 - [x] O profissional envia documentos durante o pré-cadastro. Formatos aceitos: PDF/JPG/PNG, até 10 MB por arquivo, guardados de forma privada.
 - [x] O acesso do profissional usa CPF/data de nascimento; a agenda de inscrição não solicita valor de sessão, formato de atendimento ou turnos.
 - [x] A identidade visual do portal existente se aproxima do site da Somente por meio da paleta azul-violeta/ciano, tipografia e acabamentos, sem alterar informações ou fluxos funcionais.

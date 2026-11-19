@@ -47,7 +47,7 @@ export interface NovoCadastroInput {
   registro: string;
   especialidades: string[];
   abordagem: string;
-  experienciaAnos: number;
+  experienciaAnos: number | null;
   agenda: AgendaSlot[];
   observacoesAgenda?: string;
   bio?: string;

@@ -50,6 +50,7 @@ export function Field({
   hint,
   error,
   required,
+  optional,
   children,
   className,
 }: {
@@ -57,6 +58,7 @@ export function Field({
   hint?: string;
   error?: string;
   required?: boolean;
+  optional?: boolean;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -65,6 +67,7 @@ export function Field({
       <Label>
         {label}
         {required && <span className="ml-1 text-destructive">*</span>}
+        {optional && !required && <span className="ml-2 text-xs font-normal text-muted-foreground">Opcional</span>}
       </Label>
       {children}
       {error ? (

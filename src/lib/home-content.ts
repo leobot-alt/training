@@ -1,3 +1,5 @@
+import { DEFAULT_REGISTRATION_FIELDS, type RegistrationFieldRules } from './registration-fields';
+
 export interface HomeTextItem {
   title: string;
   text: string;
@@ -36,6 +38,7 @@ export interface HomeContent {
     email: string;
     items: HomeFaqItem[];
   };
+  registrationFields: RegistrationFieldRules;
 }
 
 export const DEFAULT_HOME_CONTENT: HomeContent = {
@@ -90,4 +93,5 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
       { q: 'Atendo presencialmente também?', a: 'A operação é 100% online. Alguns profissionais com registro em capitais podem atuar em regime híbrido, mediante avaliação do time.' },
     ],
   },
+  registrationFields: DEFAULT_REGISTRATION_FIELDS,
 };

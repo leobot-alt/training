@@ -1,6 +1,7 @@
 import type { Candidato, SessionUser, TeamAccount, TeamPermission, Trilha, ProgressoMap, PipelineStage, SolicitacaoProfissional } from './types';
 import type { HomeContent } from './home-content';
 import type { TrainingFlowStage } from './training-flow';
+import { normalizeRegistrationFields } from './registration-fields';
 
 export interface CrmSnapshot {
   candidatos: Candidato[];
@@ -56,6 +57,11 @@ export function normalizeRemoteState(value: unknown, fallback: CrmSnapshot): Crm
     ? remote.teamAccounts.map(teamAccountFromRemote).filter((item): item is TeamAccount => Boolean(item))
     : [];
   const homeContent = asRecord(remote.homeContent);
+  const normalizedHomeContent = {
+    ...fallback.homeContent,
+    ...homeContent,
+    registrationFields: normalizeRegistrationFields(homeContent.registrationFields),
+  } as unknown as HomeContent;
   return {
     ...fallback,
     ...remote,
@@ -65,7 +71,7 @@ export function normalizeRemoteState(value: unknown, fallback: CrmSnapshot): Crm
     progresso: asRecord(remote.progresso) as ProgressoMap,
     pipelineStages: Array.isArray(remote.pipelineStages) ? remote.pipelineStages as PipelineStage[] : fallback.pipelineStages,
     solicitacoes: Array.isArray(remote.solicitacoes) ? remote.solicitacoes as SolicitacaoProfissional[] : [],
-    homeContent: Object.keys(homeContent).length ? homeContent as unknown as HomeContent : fallback.homeContent,
+    homeContent: normalizedHomeContent,
     trainingFlow: Array.isArray(remote.trainingFlow) ? remote.trainingFlow as TrainingFlowStage[] : fallback.trainingFlow,
     teamAccounts,
   } as CrmSnapshot;

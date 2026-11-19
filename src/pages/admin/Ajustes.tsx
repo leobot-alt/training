@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Database, Download, FileArchive, ShieldAlert } from 'lucide-react';
+import { Database, Download, FileArchive, LockKeyhole, ShieldAlert } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/field';
@@ -10,17 +10,26 @@ import { uploadCandidateDocument } from '@/lib/supabase';
 import { deleteDocumentFile } from '@/lib/document-storage';
 import { supabase } from '@/lib/supabase';
 import { downloadFile, formatDate } from '@/lib/utils';
+import { FIXED_REQUIRED_REGISTRATION_FIELDS, normalizeRegistrationFields, REGISTRATION_FIELD_GROUPS, type RegistrationFieldKey } from '@/lib/registration-fields';
 
 const ALLOWED_STATE_KEYS = ['candidatos', 'trilhas', 'progresso', 'pipelineStages', 'solicitacoes', 'homeContent', 'trainingFlow'] as const;
 
 export default function Ajustes() {
-  const { candidatos, user } = useStore();
+  const { candidatos, user, homeContent, syncError, updateHomeContent } = useStore();
+  const registrationFields = normalizeRegistrationFields(homeContent.registrationFields);
   const [exportando, setExportando] = useState(false);
   const [bundle, setBundle] = useState<LegacyBundle | null>(null);
   const [preparando, setPreparando] = useState(false);
   const [erro, setErro] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [progresso, setProgresso] = useState('');
+
+  const setRegistrationField = (key: RegistrationFieldKey, required: boolean) => {
+    updateHomeContent({
+      ...homeContent,
+      registrationFields: { ...registrationFields, [key]: required },
+    });
+  };
 
   const exportarCsv = () => {
     const header = ['Protocolo', 'Nome', 'E-mail', 'Telefone', 'Cidade', 'UF', 'Profissão', 'Registro', 'Status', 'Agenda disponível', 'Cadastro'];
@@ -138,6 +147,53 @@ export default function Ajustes() {
 
       {erro && <div role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">{erro}</div>}
       {mensagem && <div role="status" className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{mensagem}</div>}
+
+      {user?.role === 'admin' && <Card className="border-border/70">
+        <CardHeader>
+          <CardTitle>Campos do pré-cadastro</CardTitle>
+          <p className="text-sm font-normal text-muted-foreground">Defina o que o profissional precisa preencher. As alterações ficam salvas automaticamente e valem para novos envios.</p>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {syncError && <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">A configuração não foi sincronizada com o Supabase: {syncError}</p>}
+          <div className="rounded-md border border-primary/15 bg-primary/5 p-4">
+            <p className="text-sm font-medium">Sempre obrigatórios</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Nome, CPF, data de nascimento, profissão e consentimento LGPD são necessários para identificar o profissional, permitir o acesso e registrar a autorização de tratamento de dados.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {FIXED_REQUIRED_REGISTRATION_FIELDS.map((field) => <span key={field.label} title={field.reason} className="inline-flex items-center gap-1.5 rounded-full border bg-card px-2.5 py-1 text-xs font-medium"><LockKeyhole className="h-3 w-3 text-secondary" />{field.label}</span>)}
+            </div>
+          </div>
+
+          {REGISTRATION_FIELD_GROUPS.map((group) => <section key={group.title} className="space-y-2">
+            <h2 className="text-sm font-semibold">{group.title}</h2>
+            <div className="divide-y rounded-md border border-border/70 px-3">
+              {group.fields.map((field) => {
+                const required = registrationFields[field.key];
+                return <div key={field.key} className="flex items-center justify-between gap-4 py-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{field.label}</p>
+                    <p className="text-xs text-muted-foreground">{required ? 'O profissional precisa preencher este campo.' : 'O profissional pode deixar este campo em branco.'}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={required}
+                      aria-label={`${field.label}: ${required ? 'obrigatório' : 'opcional'}`}
+                      onClick={() => setRegistrationField(field.key, !required)}
+                      className={`relative h-6 w-11 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${required ? 'bg-primary' : 'bg-muted'}`}
+                    >
+                      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${required ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                    </button>
+                    <span className={`w-24 text-right text-xs font-semibold ${required ? 'text-primary' : 'text-muted-foreground'}`}>{required ? 'Obrigatório' : 'Opcional'}</span>
+                  </div>
+                </div>;
+              })}
+            </div>
+          </section>)}
+
+          <p className="text-xs text-muted-foreground">Os documentos anexos continuam podendo ser enviados nesta etapa e ficam pendentes para análise quando não anexados.</p>
+        </CardContent>
+      </Card>}
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Card className="border-border/70">
