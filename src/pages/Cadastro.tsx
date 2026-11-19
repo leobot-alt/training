@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge, Progress } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/badge';
 import { Field, Input, Select, Textarea } from '@/components/ui/field';
 import { AgendaGrade } from '@/components/AgendaGrade';
 import { useStore } from '@/lib/store';
@@ -30,6 +30,22 @@ const UFS = [
 ];
 
 const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024;
+
+const FIELD_STEP_BY_KEY: Record<string, number> = {
+  nome: 0, cpf: 0, rg: 0, sexo: 0, dataNascimento: 0, email: 0, emailTeams: 0,
+  telefone: 0, cep: 0, endereco: 0, numero: 0, cidade: 0, uf: 0, chavePix: 0,
+  profissao: 1, registro: 1, experienciaAnos: 1, abordagem: 1, especialidades: 1, bio: 1,
+  agenda: 3, lgpd: 4,
+};
+
+function getFieldErrors(error: unknown): Record<string, string> {
+  if (!error || typeof error !== 'object') return {};
+  const value = (error as { fieldErrors?: unknown }).fieldErrors;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string'),
+  );
+}
 
 const ETAPAS = [
   { titulo: 'Dados pessoais', descricao: 'Como podemos falar com você', icon: UserRound },
@@ -172,6 +188,7 @@ export default function Cadastro() {
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => ({ ...prev, [key]: '' }));
+    setErroUpload('');
   };
 
   const toggleArray = (key: 'abordagem' | 'especialidades', value: string) => {
@@ -180,6 +197,7 @@ export default function Cadastro() {
       [key]: prev[key].includes(value) ? prev[key].filter((v) => v !== value) : [...prev[key], value],
     }));
     setErrors((prev) => ({ ...prev, [key]: '' }));
+    setErroUpload('');
   };
 
   const selecionarArquivo = (nomeDocumento: string, arquivo?: File): boolean => {
@@ -377,14 +395,22 @@ export default function Cadastro() {
       }
       setProtocolo(candidato.protocolo);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch {
+    } catch (error) {
       await Promise.allSettled(arquivosSalvos.map((id) => deleteDocumentFile(id)));
-      setErroUpload(isUpdate
-        ? 'Não foi possível salvar os anexos. Tente novamente; nenhuma solicitação de alteração foi enviada.'
-        : candidatoCriadoId
-          ? 'Seu pré-cadastro foi recebido, mas não foi possível concluir o envio dos documentos. Revise os arquivos e tente novamente; o sistema continuará o mesmo protocolo.'
-          : 'Não foi possível enviar o pré-cadastro. Confira os dados e tente novamente.');
-      setStep(2);
+      const fieldErrors = getFieldErrors(error);
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors(fieldErrors);
+        setErroUpload('Confira os campos destacados. Seus anexos continuam selecionados para uma nova tentativa.');
+        setStep(Math.min(...Object.keys(fieldErrors).map((field) => FIELD_STEP_BY_KEY[field] ?? 2)));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setErroUpload(isUpdate
+          ? 'Não foi possível salvar os anexos. Tente novamente; nenhuma solicitação de alteração foi enviada.'
+          : candidatoCriadoId
+            ? 'Seu pré-cadastro foi recebido, mas não foi possível concluir o envio dos documentos. Revise os arquivos e tente novamente; o sistema continuará o mesmo protocolo.'
+            : error instanceof Error ? error.message : 'Não foi possível enviar o pré-cadastro. Tente novamente.');
+        setStep(2);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -489,6 +515,11 @@ export default function Cadastro() {
               </div>
               <Progress value={progress} />
             </div>
+            {erroUpload && (
+              <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                {erroUpload}
+              </p>
+            )}
 
             {step === 0 && (
               <div className="grid gap-5 sm:grid-cols-2 animate-fade-in">
@@ -550,7 +581,7 @@ export default function Cadastro() {
 
             {step === 1 && (
               <div className="grid gap-5 sm:grid-cols-2 animate-fade-in">
-                <Field label="Profissão" required>
+                <Field label="Profissão" required error={errors.profissao}>
                   <Select
                     value={form.profissao}
                     onChange={(e) => set('profissao', e.target.value as FormState['profissao'])}
@@ -686,9 +717,8 @@ export default function Cadastro() {
                     );
                   })}
                 </div>
-                {erroUpload && <p className="text-xs font-medium text-destructive">{erroUpload}</p>}
-                <p className="rounded-md bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
-                  Protótipo: os arquivos ficam salvos apenas neste navegador e não são enviados a um servidor. Não anexe documentos reais até conectar um armazenamento seguro.
+                <p className="rounded-md border border-border/70 bg-accent/40 p-3 text-xs leading-relaxed text-muted-foreground">
+                  Os anexos selecionados são enviados ao armazenamento privado do Supabase ao concluir o cadastro. Mantenha esta página aberta; se houver erro, eles continuam selecionados para uma nova tentativa.
                 </p>
               </div>
             )}
@@ -823,10 +853,6 @@ export default function Cadastro() {
         </Card>
       </div>
 
-      <div className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-        <Badge className="border-border bg-card">Ambiente de demonstração</Badge>
-        Os dados ficam apenas neste navegador. Não use dados reais até conectar um backend com armazenamento protegido.
-      </div>
     </div>
   );
 }

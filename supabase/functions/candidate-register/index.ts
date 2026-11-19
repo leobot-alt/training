@@ -177,20 +177,34 @@ Deno.serve(async (req) => {
       ? abordagem.length >= 2 && abordagem.length <= 400
       : !abordagem || (abordagem.length >= 2 && abordagem.length <= 400);
 
-    if (!validCpf(cpf) || !validBirth(dob) || nome.length < 5 || nome.length > 150
-      || !optionalValueValid("rg", rg, rg.length >= 5 && rg.length <= 80)
-      || !sexOk || !emailOk || !emailTeamsOk || !phoneOk || !cepOk
-      || (required("endereco") && !endereco) || endereco.length > 200
-      || (required("numero") && !numero) || numero.length > 80
-      || (required("cidade") && !cidade) || cidade.length > 120
-      || !ufOk || !pixOk || input.lgpd !== true) {
-      return response(400, { error: "Não foi possível concluir o cadastro. Confira os dados e o consentimento informado." });
-    }
-
-    if (!specialtiesValid || !agendaValid || !experienceValid
-      || !["Psicólogo", "Psiquiatra"].includes(profissao)
-      || !registrationOk || !approachOk || bio.length > 2000 || (required("bio") && !bio)) {
-      return response(400, { error: "Não foi possível concluir o cadastro. Confira os dados informados." });
+    const fieldErrors: Record<string, string> = {};
+    if (!validCpf(cpf)) fieldErrors.cpf = "Informe um CPF válido.";
+    if (!validBirth(dob)) fieldErrors.dataNascimento = "Informe uma data de nascimento válida.";
+    if (nome.length < 5 || nome.length > 150) fieldErrors.nome = "Informe seu nome completo.";
+    if (!optionalValueValid("rg", rg, rg.length >= 5 && rg.length <= 80)) fieldErrors.rg = "Informe um RG válido.";
+    if (!sexOk) fieldErrors.sexo = "Selecione uma opção válida.";
+    if (!emailOk) fieldErrors.email = "Informe um e-mail válido.";
+    if (!emailTeamsOk) fieldErrors.emailTeams = "Informe um e-mail válido para o Teams.";
+    if (!phoneOk) fieldErrors.telefone = "Informe um telefone válido com DDD.";
+    if (!cepOk) fieldErrors.cep = "Informe um CEP válido.";
+    if ((required("endereco") && !endereco) || endereco.length > 200) fieldErrors.endereco = "Informe um endereço válido.";
+    if ((required("numero") && !numero) || numero.length > 80) fieldErrors.numero = "Informe um número válido.";
+    if ((required("cidade") && !cidade) || cidade.length > 120) fieldErrors.cidade = "Informe uma cidade válida.";
+    if (!ufOk) fieldErrors.uf = "Selecione uma UF válida.";
+    if (!pixOk) fieldErrors.chavePix = "Informe uma chave Pix válida.";
+    if (input.lgpd !== true) fieldErrors.lgpd = "É necessário aceitar o tratamento de dados para continuar.";
+    if (!specialtiesValid) fieldErrors.especialidades = "Selecione especialidades válidas.";
+    if (!agendaValid) fieldErrors.agenda = "Informe horários disponíveis válidos.";
+    if (!experienceValid) fieldErrors.experienciaAnos = "Informe um número válido de anos de experiência.";
+    if (!["Psicólogo", "Psiquiatra"].includes(profissao)) fieldErrors.profissao = "Selecione uma profissão válida.";
+    if (!registrationOk) fieldErrors.registro = "Informe um registro profissional válido.";
+    if (!approachOk) fieldErrors.abordagem = "Selecione uma abordagem válida.";
+    if (bio.length > 2000 || (required("bio") && !bio)) fieldErrors.bio = "Informe um resumo válido, com até 2.000 caracteres.";
+    if (Object.keys(fieldErrors).length > 0) {
+      return response(400, {
+        error: "Revise os campos destacados e tente novamente.",
+        fieldErrors,
+      });
     }
 
     const birthPassword = /^\d{4}-\d{2}-\d{2}$/.test(dob) ? dob : `${dob.slice(6, 10)}-${dob.slice(3, 5)}-${dob.slice(0, 2)}`;

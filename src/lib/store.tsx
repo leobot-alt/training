@@ -186,7 +186,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const addCandidato = useCallback(async (input: NovoCadastroInput) => {
     if (!SUPABASE_CONFIGURED) throw new Error('O sistema ainda não está conectado ao Supabase.');
     const { data, error } = await supabase.functions.invoke('candidate-register', { body: input });
-    if (error || !data?.candidateId) throw new Error(data?.error ?? error?.message ?? 'Não foi possível enviar o pré-cadastro.');
+    if (error || !data?.candidateId) {
+      let payload = data && typeof data === 'object' ? data as Record<string, unknown> : {};
+      const context = (error as { context?: unknown } | null)?.context;
+      if (context instanceof Response) {
+        try {
+          const responseBody: unknown = await context.clone().json();
+          if (responseBody && typeof responseBody === 'object' && !Array.isArray(responseBody)) {
+            payload = responseBody as Record<string, unknown>;
+          }
+        } catch {
+          // Keep the function client error when the response has no JSON body.
+        }
+      }
+      const message = typeof payload.error === 'string'
+        ? payload.error
+        : error?.message ?? 'Não foi possível enviar o pré-cadastro.';
+      const failure = new Error(message);
+      const fieldErrors = payload.fieldErrors;
+      if (fieldErrors && typeof fieldErrors === 'object' && !Array.isArray(fieldErrors)) {
+        Object.assign(failure, { fieldErrors });
+      }
+      throw failure;
+    }
     const { error: signInError } = await supabase.auth.signInWithPassword({ email: cpfAuthEmail(input.cpf), password: input.dataNascimento });
     if (signInError) throw new Error('Pré-cadastro recebido, mas não foi possível abrir sua sessão. Entre com CPF e data de nascimento.');
     const remote = await refreshFromSupabase();
