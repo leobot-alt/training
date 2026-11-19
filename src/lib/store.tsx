@@ -64,7 +64,7 @@ interface StoreValue extends PersistedState {
   loading: boolean;
   syncError: string;
   addCandidato: (input: NovoCadastroInput) => Promise<Candidato>;
-  updateCandidateDocuments: (id: string, documentos: Documento[]) => Promise<void>;
+  updateCandidateDocuments: (id: string, documentos: Documento[], documentosEnviados?: Array<Omit<Documento, 'status'>>) => Promise<void>;
   updateStatus: (id: string, status: CandidatoStatus) => void;
   updateCandidato: (id: string, patch: Partial<Candidato>) => void;
   solicitarAtualizacaoCandidato: (id: string, dados: DadosPerfilCandidato) => void;
@@ -232,8 +232,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return novo;
   }, [refreshFromSupabase]);
 
-  const updateCandidateDocuments = useCallback(async (id: string, documentos: Documento[]) => {
-    const { error } = await supabase.rpc('update_candidate_documents', { p_candidate_id: id, p_documents: documentos });
+  const updateCandidateDocuments = useCallback(async (
+    id: string,
+    documentos: Documento[],
+    documentosEnviados: Array<Omit<Documento, 'status'>> = documentos,
+  ) => {
+    const { error } = await supabase.rpc('update_candidate_documents', { p_candidate_id: id, p_documents: documentosEnviados });
     if (error) throw error;
     setState((prev) => ({ ...prev, candidatos: prev.candidatos.map((candidate) => candidate.id === id ? { ...candidate, documentos } : candidate) }));
   }, []);

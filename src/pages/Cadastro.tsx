@@ -383,7 +383,20 @@ export default function Cadastro() {
       }
 
       if (arquivosSalvos.length > 0) {
-        await updateCandidateDocuments(candidato.id, documentosAtualizados);
+        const documentosParaSalvar = documentosAtualizados
+          .filter((documento): documento is Documento & { arquivoId: string } => Boolean(arquivos[documento.nome]) && Boolean(documento.arquivoId))
+          .map(({ nome, arquivoId, arquivoNome, arquivoTipo, arquivoTamanho, enviadoEm }) => ({
+            nome,
+            arquivoId,
+            arquivoNome,
+            arquivoTipo,
+            arquivoTamanho,
+            enviadoEm,
+          }));
+        if (documentosParaSalvar.length !== arquivosSalvos.length) {
+          throw new Error('Não foi possível associar todos os arquivos. Selecione-os novamente e tente outra vez.');
+        }
+        await updateCandidateDocuments(candidato.id, documentosAtualizados, documentosParaSalvar);
         const documentosSubstituidos = candidato.documentos
           .map((documento) => arquivos[documento.nome] ? documento.arquivoId : undefined)
           .filter((id): id is string => Boolean(id));

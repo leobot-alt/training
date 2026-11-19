@@ -7,6 +7,7 @@
 - [x] O administrador configura em Ajustes, campo a campo, se RG, sexo, e-mail, e-mail Teams, telefone, CEP, endereço, número, cidade, UF, chave Pix, registro, experiência, abordagens, especialidades, resumo e agenda são obrigatórios. A escolha persiste no Supabase e é aplicada pelo formulário e pelo endpoint de cadastro. Nome, CPF, data de nascimento, profissão e consentimento LGPD permanecem obrigatórios.
 - [x] Se o endpoint rejeitar um pré-cadastro, a tela aponta os campos a corrigir sem expor valores pessoais; os anexos selecionados permanecem disponíveis para nova tentativa e são enviados ao bucket privado após criar o cadastro; nenhum aviso afirma incorretamente que a aplicação ainda é protótipo ou não tem backend.
 - [x] O profissional envia documentos durante o pré-cadastro. Formatos aceitos: PDF/JPG/PNG, até 10 MB por arquivo, guardados de forma privada.
+- [ ] A etapa de anexos aceita qualquer subconjunto de documentos: o servidor confirma os objetos já enviados, marca como enviados somente esses arquivos e preserva os demais como pendentes, sem aceitar do navegador alterações de status ou documentos de outro candidato.
 - [x] O acesso do profissional usa CPF/data de nascimento; a agenda de inscrição não solicita valor de sessão, formato de atendimento ou turnos.
 - [x] A identidade visual do portal existente se aproxima do site da Somente por meio da paleta azul-violeta/ciano, tipografia e acabamentos, sem alterar informações ou fluxos funcionais.
 
